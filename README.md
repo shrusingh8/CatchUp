@@ -2,6 +2,8 @@
 
 **Got a text you can't decode? CatchUp tells you what they actually meant.**
 
+👉 **Try it: https://shrusingh8.github.io/CatchUp/**
+
 Paste in a message like *"no cap that's lowkey the goat 🐐"* and you get back:
 
 > **They're saying it's genuinely the best, honestly.**
