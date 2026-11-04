@@ -2,86 +2,87 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>CatchUp — what did they just say?</title>
+<link rel="icon" href="logo.svg">
 <style>
   :root {
-    --bg: #fbf7f2; --card: #fff; --ink: #1d1a17; --muted: #7a716a;
-    --accent: #ff6b4a; --accent-soft: #ffe7e0; --bubble: #ece7e1; --line: #e8e1d9;
+    --page: #e9e6e2; --screen: #fff; --ink: #111; --muted: #8e8e93; --line: #e5e5ea;
+    --sent: #0a84ff; --recv: #e9e9eb; --accent: #ff6b4a; --chip: #fff;
   }
   @media (prefers-color-scheme: dark) {
-    :root { --bg: #151311; --card: #201d1a; --ink: #f5efe9; --muted: #a39890;
-            --accent-soft: #3a2420; --bubble: #2b2724; --line: #332e2a; }
+    :root { --page: #0d0d0e; --screen: #000; --ink: #fff; --line: #2c2c2e; --recv: #26252a; --chip: #1c1c1e; }
   }
   * { box-sizing: border-box; }
-  body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--ink);
-         font: 17px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
-  main { max-width: 560px; margin: 0 auto; padding: 48px 20px 64px; }
-  h1 { font-size: 44px; font-weight: 850; letter-spacing: -1.5px; margin: 0; }
-  h1 span { color: var(--accent); }
-  .tag { color: var(--muted); font-size: 19px; margin: 6px 0 32px; }
-  label.small { display: block; font-size: 13px; font-weight: 600; color: var(--muted);
-                text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
-  textarea { width: 100%; min-height: 96px; resize: vertical; border: none; outline: none;
-             background: var(--bubble); color: var(--ink); font: inherit;
-             padding: 14px 18px; border-radius: 22px 22px 22px 6px; }
-  textarea:focus { box-shadow: 0 0 0 3px var(--accent-soft); }
-  .examples { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 20px; }
-  .examples button { border: 1px solid var(--line); background: var(--card); color: var(--ink);
-                     font: inherit; font-size: 14px; padding: 6px 12px; border-radius: 999px; cursor: pointer; }
-  .examples button:hover { border-color: var(--accent); }
-  .go { width: 100%; border: none; background: var(--accent); color: #fff; font: inherit; font-weight: 700;
-        font-size: 18px; padding: 14px; border-radius: 999px; cursor: pointer; transition: transform .1s; }
-  .go:active { transform: scale(.98); }
-  .go:disabled { opacity: .6; cursor: wait; }
-  .result { margin-top: 24px; background: var(--card); border: 1px solid var(--line);
-            border-radius: 24px; padding: 22px; display: none; }
-  .result.show { display: block; animation: pop .25s ease-out; }
-  @keyframes pop { from { opacity: 0; transform: translateY(6px); } }
-  .meaning { font-size: 21px; font-weight: 650; line-height: 1.35; margin: 0; }
-  .terms { list-style: none; padding: 0; margin: 16px 0 0; display: grid; gap: 8px; }
-  .terms li { display: flex; gap: 10px; align-items: baseline; }
-  .terms b { background: var(--accent-soft); color: var(--accent); padding: 2px 10px;
-             border-radius: 999px; font-size: 15px; white-space: nowrap; }
-  .terms span { color: var(--muted); font-size: 15px; }
-  .error { color: var(--accent); }
-  details { margin-top: 40px; color: var(--muted); font-size: 14px; }
-  summary { cursor: pointer; }
-  details input { width: 100%; margin-top: 10px; padding: 10px 14px; border-radius: 12px;
-                  border: 1px solid var(--line); background: var(--card); color: var(--ink); font: inherit; }
-  footer { margin-top: 28px; color: var(--muted); font-size: 13px; }
+  html, body { margin: 0; height: 100%; }
+  body { background: var(--page); color: var(--ink); display: grid; place-items: center;
+         font: 17px/1.35 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif; }
+
+  /* phone frame on desktop, full screen on phones */
+  .phone { width: 390px; height: min(820px, 96vh); background: var(--screen); border-radius: 48px;
+           box-shadow: 0 0 0 10px #1b1b1d, 0 30px 80px rgba(0,0,0,.35);
+           display: flex; flex-direction: column; overflow: hidden; }
+  @media (max-width: 500px) { .phone { width: 100%; height: 100dvh; border-radius: 0; box-shadow: none; } }
+
+  header { padding: 18px 16px 10px; text-align: center; border-bottom: 1px solid var(--line);
+           background: color-mix(in srgb, var(--screen) 85%, transparent); backdrop-filter: blur(20px); }
+  header img { width: 56px; height: 56px; display: block; margin: 0 auto 4px; }
+  header .name { font-size: 12px; font-weight: 500; }
+  header .name::after { content: " ›"; color: var(--muted); }
+
+  #chat { flex: 1; overflow-y: auto; padding: 12px 12px 4px; display: flex; flex-direction: column; gap: 3px; }
+  .stamp { text-align: center; color: var(--muted); font-size: 11px; margin: 6px 0 10px; }
+  .msg { max-width: 76%; padding: 8px 13px; border-radius: 19px; white-space: pre-wrap; word-wrap: break-word;
+         animation: in .22s ease-out; }
+  .msg.me { align-self: flex-end; background: var(--sent); color: #fff; border-bottom-right-radius: 6px; }
+  .msg.them { align-self: flex-start; background: var(--recv); border-bottom-left-radius: 6px; }
+  .msg + .msg.me, .msg + .msg.them { margin-top: 2px; }
+  .msg.me + .msg.them, .msg.them + .msg.me { margin-top: 10px; }
+  .msg.error { color: var(--accent); }
+  .terms { display: grid; gap: 6px; }
+  .terms div { font-size: 15px; }
+  .terms b { color: var(--accent); }
+  .delivered { align-self: flex-end; color: var(--muted); font-size: 11px; margin: 2px 4px 0; }
+  .typing { display: flex; gap: 4px; padding: 12px 14px; }
+  .typing i { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); animation: blink 1.2s infinite; }
+  .typing i:nth-child(2) { animation-delay: .2s; } .typing i:nth-child(3) { animation-delay: .4s; }
+  @keyframes blink { 0%, 60%, 100% { opacity: .3; } 30% { opacity: 1; } }
+  @keyframes in { from { opacity: 0; transform: translateY(8px) scale(.97); } }
+
+  .quick { display: flex; gap: 6px; overflow-x: auto; padding: 6px 12px; scrollbar-width: none; }
+  .quick button { flex: none; border: 1px solid var(--line); background: var(--chip); color: var(--sent);
+                  font: inherit; font-size: 14px; padding: 6px 12px; border-radius: 999px; cursor: pointer; }
+
+  form { display: flex; align-items: flex-end; gap: 8px; padding: 6px 12px max(14px, env(safe-area-inset-bottom)); }
+  textarea { flex: 1; resize: none; max-height: 120px; overflow-y: auto; scrollbar-width: none; border: 1px solid var(--line); border-radius: 20px;
+             padding: 8px 14px; font: inherit; color: var(--ink); background: var(--screen); outline: none; }
+  form button { width: 34px; height: 34px; border-radius: 50%; border: none; background: var(--sent); color: #fff;
+                font-size: 19px; font-weight: 700; cursor: pointer; flex: none; margin-bottom: 1px; }
+  form button:disabled { background: var(--line); cursor: default; }
 </style>
 </head>
 <body>
-<main>
-  <h1>Catch<span>Up</span></h1>
-  <p class="tag">Got a text you can't decode? Paste it in. Get what they actually meant.</p>
+<div class="phone">
+  <header>
+    <img src="logo.svg" alt="CatchUp logo">
+    <div class="name">CatchUp</div>
+  </header>
 
-  <label class="small" for="msg">Their message</label>
-  <textarea id="msg" placeholder="e.g. ngl that fit is bussin fr fr 💀"></textarea>
+  <div id="chat" aria-live="polite">
+    <div class="stamp">Today</div>
+  </div>
 
-  <div class="examples" aria-label="Try an example">
+  <div class="quick" aria-label="Try an example">
     <button>no cap that's lowkey the goat 🐐</button>
     <button>it's giving main character energy</button>
     <button>wyd rn? hmu if ur down 👀</button>
   </div>
 
-  <button class="go" id="go">Catch me up</button>
-
-  <section class="result" id="result" aria-live="polite">
-    <p class="meaning" id="meaning"></p>
-    <ul class="terms" id="terms"></ul>
-  </section>
-
-  <details id="settings">
-    <summary>Settings · API key</summary>
-    <!-- ponytail: key lives in this browser only. A public site should call a small proxy instead so visitors don't need their own key. -->
-    <input id="key" type="password" placeholder="sk-ant-…" autocomplete="off">
-    <p>Stored only in this browser. Get one at console.anthropic.com.</p>
-  </details>
-
-  <footer>Also lives in iMessage — copy a message, open CatchUp from the app drawer.</footer>
-</main>
+  <form id="form">
+    <textarea id="msg" rows="1" placeholder="Paste a text you can't decode" aria-label="Message"></textarea>
+    <button id="send" aria-label="Send" disabled>↑</button>
+  </form>
+</div>
 
 <script>
 // Same prompt + schema as the iMessage version (MessagesViewController.swift) — keep them in sync.
@@ -99,39 +100,78 @@ const SCHEMA = {
 };
 
 const $ = id => document.getElementById(id);
-const key = $("key");
-key.value = localStorage.getItem("catchup-key") || "";
-key.oninput = () => localStorage.setItem("catchup-key", key.value.trim());
+const chat = $("chat"), input = $("msg"), send = $("send");
+// ponytail: key lives in this browser only. A public site should call a small proxy so visitors don't need a key.
+let key = localStorage.getItem("catchup-key") || "";
 
-document.querySelectorAll(".examples button").forEach(b =>
-  b.onclick = () => { $("msg").value = b.textContent; go(); });
-$("go").onclick = go;
-$("msg").onkeydown = e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) go(); };
-
-function show(meaning, terms = [], isError = false) {
-  $("meaning").textContent = meaning;
-  $("meaning").classList.toggle("error", isError);
-  $("terms").replaceChildren(...terms.map(t => {
-    const li = document.createElement("li");
-    li.innerHTML = "<b></b><span></span>";
-    li.querySelector("b").textContent = t.term;      // textContent, never innerHTML, for model output
-    li.querySelector("span").textContent = t.means;
-    return li;
-  }));
-  $("result").classList.remove("show"); void $("result").offsetWidth; $("result").classList.add("show");
+function bubble(who, text, cls = "") {
+  const el = document.createElement("div");
+  el.className = `msg ${who} ${cls}`;
+  if (typeof text === "string") el.textContent = text; else el.append(text);  // never innerHTML for model output
+  chat.append(el);
+  chat.scrollTop = chat.scrollHeight;
+  return el;
 }
 
-async function go() {
-  const text = $("msg").value.trim();
-  if (!text) return $("msg").focus();
-  if (!key.value.trim()) { $("settings").open = true; key.focus(); return show("Add your API key in Settings below first.", [], true); }
+function typing() {
+  const el = bubble("them", "", "typing");
+  el.innerHTML = "<i></i><i></i><i></i>";
+  return el;
+}
 
-  $("go").disabled = true; $("go").textContent = "Decoding…";
+function termsList(terms) {
+  const box = document.createElement("div");
+  box.className = "terms";
+  for (const t of terms) {
+    const row = document.createElement("div");
+    const b = document.createElement("b");
+    b.textContent = t.term;
+    row.append(b, " — " + t.means);
+    box.append(row);
+  }
+  return box;
+}
+
+// Opening message from CatchUp
+bubble("them", key
+  ? "hey 👋 send me any text you can't decode and I'll tell you what they actually meant"
+  : "hey 👋 I decode slang. first, paste your Anthropic API key here (starts with sk-ant-). it stays in this browser.");
+
+input.oninput = () => {
+  send.disabled = !input.value.trim();
+  input.style.height = "auto";
+  input.style.height = input.scrollHeight + "px";
+};
+input.onkeydown = e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("form").requestSubmit(); } };
+document.querySelectorAll(".quick button").forEach(b =>
+  b.onclick = () => { input.value = b.textContent; input.oninput(); $("form").requestSubmit(); });
+
+$("form").onsubmit = async e => {
+  e.preventDefault();
+  const text = input.value.trim();
+  if (!text || send.disabled) return;
+  input.value = ""; input.oninput();
+
+  // Pasting a key just saves it — never shown in the chat.
+  if (text.startsWith("sk-ant-")) {
+    key = text; localStorage.setItem("catchup-key", key);
+    bubble("me", "🔑 API key");
+    bubble("them", "got it ✅ now send me a text you can't decode");
+    return;
+  }
+
+  bubble("me", text);
+  if (!key) return bubble("them", "paste your API key first (starts with sk-ant-) and I'm all yours", "error");
+
+  document.querySelector(".delivered")?.remove();
+  chat.insertAdjacentHTML("beforeend", '<div class="delivered">Delivered</div>');
+  send.disabled = true;
+  const dots = typing();
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
-        "x-api-key": key.value.trim(),
+        "x-api-key": key,
         "anthropic-version": "2023-06-01",
         "anthropic-beta": "server-side-fallback-2026-07-01",
         "anthropic-dangerous-direct-browser-access": "true",
@@ -147,16 +187,20 @@ async function go() {
       }),
     });
     const data = await res.json();
-    if (data.error) return show("Something went wrong: " + data.error.message, [], true);
-    if (data.stop_reason === "refusal") return show("CatchUp can't translate that one.", [], true);
+    dots.remove();
+    if (data.error) {
+      if (data.error.type === "authentication_error") { key = ""; localStorage.removeItem("catchup-key"); }
+      return bubble("them", "hmm, that didn't work: " + data.error.message, "error");
+    }
+    if (data.stop_reason === "refusal") return bubble("them", "I can't translate that one 😬", "error");
     const out = JSON.parse(data.content.find(b => b.type === "text").text);
-    show(out.meaning, out.terms);
+    bubble("them", out.meaning);
+    if (out.terms.length) bubble("them", termsList(out.terms));
   } catch {
-    show("Couldn't connect. Check your internet and try again.", [], true);
-  } finally {
-    $("go").disabled = false; $("go").textContent = "Catch me up";
+    dots.remove();
+    bubble("them", "couldn't connect 📵 check your internet and try again", "error");
   }
-}
+};
 </script>
 </body>
 </html>
